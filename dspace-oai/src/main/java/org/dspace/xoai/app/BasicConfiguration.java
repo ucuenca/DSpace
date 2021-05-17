@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.lyncode.xoai.dataprovider.services.api.ResourceResolver;
+import org.dspace.utils.MockContextImpl;
 
 @Configuration
 public class BasicConfiguration {
@@ -51,7 +52,7 @@ public class BasicConfiguration {
 
     @Bean
     public ContextService contextService() {
-        return new DSpaceContextService();
+        return new MockContextImpl();
     }
 
 

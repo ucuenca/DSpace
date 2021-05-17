@@ -7,6 +7,7 @@
  */
 package org.dspace.xoai.services.impl.xoai;
 
+import com.google.common.collect.Lists;
 import com.lyncode.xoai.dataprovider.core.ListSetsResult;
 import com.lyncode.xoai.dataprovider.core.Set;
 import com.lyncode.xoai.dataprovider.services.api.SetRepository;
@@ -26,6 +27,7 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import org.dspace.xoai.services.api.config.ConfigurationService;
 
 /**
  * 
@@ -35,43 +37,21 @@ public class DSpaceSetRepository implements SetRepository
 {
     private static final Logger log = LogManager.getLogger(DSpaceSetRepository.class);
 
-    private final Context _context;
+    private final ConfigurationService _context;
 
-    public DSpaceSetRepository(Context context)
+    public DSpaceSetRepository(ConfigurationService context)
     {
         _context = context;
     }
 
     private int getCommunityCount()
     {
-        String query = "SELECT COUNT(*) as count FROM community";
-        try
-        {
-            TableRowIterator iterator = DatabaseManager.query(_context, query);
-            if (iterator.hasNext())
-                return (int) iterator.next().getLongColumn("count");
-        }
-        catch (SQLException e)
-        {
-            log.error(e.getMessage(), e);
-        }
-        return 0;
+      return Integer.parseInt(_context.getProperty("oai", "community.count"));
     }
 
     private int getCollectionCount()
     {
-        String query = "SELECT COUNT(*) as count FROM collection";
-        try
-        {
-            TableRowIterator iterator = DatabaseManager.query(_context, query);
-            if (iterator.hasNext())
-                return (int) iterator.next().getLongColumn("count");
-        }
-        catch (SQLException e)
-        {
-            log.error(e.getMessage(), e);
-        }
-        return 0;
+      return Integer.parseInt(_context.getProperty("oai", "collection.count"));
     }
 
     /**
@@ -84,31 +64,20 @@ public class DSpaceSetRepository implements SetRepository
      */
     private List<Set> community(int offset, int length)
     {
-        List<Set> array = new ArrayList<Set>();
-        StringBuffer query = new StringBuffer("SELECT community_id FROM community ORDER BY community_id");
-        List<Serializable> params = new ArrayList<Serializable>();
-
-        DatabaseManager.applyOffsetAndLimit(query,params,offset,length);
-
-        try
-        {
-            TableRowIterator iterator = DatabaseManager.query(_context, query.toString(),
-                    params.toArray());
-            int i = 0;
-            while (iterator.hasNext() && i < length)
+                List<Set> array = new ArrayList<Set>();
+        List<String> newArrayList = Lists.newArrayList(_context.getProperty("oai", "community.list").split(";"));
+        
+        newArrayList= newArrayList.subList(
+    Math.min(newArrayList.size(), offset),
+    Math.min(newArrayList.size(), offset + length));
+        
+            for(String community : newArrayList)
             {
-                TableRow row = iterator.next();
-                int communityID = row.getIntColumn("community_id");
-                Community community = Community.find(_context, communityID);
                 array.add(DSpaceSet.newDSpaceCommunitySet(
-                        community.getHandle(), community.getName()));
-                i++;
+                        "com_"+community,
+                        community));
             }
-        }
-        catch (SQLException e)
-        {
-            log.error(e.getMessage(), e);
-        }
+
         return array;
     }
 
@@ -122,32 +91,18 @@ public class DSpaceSetRepository implements SetRepository
      */
     private List<Set> collection(int offset, int length)
     {
-        List<Set> array = new ArrayList<Set>();
-        StringBuffer query = new StringBuffer("SELECT collection_id FROM collection ORDER BY collection_id");
-        List<Serializable> params = new ArrayList<Serializable>();
-
-        DatabaseManager.applyOffsetAndLimit(query,params,offset,length);
-
-        try
-        {
-            TableRowIterator iterator = DatabaseManager.query(_context, query.toString(),
-                    params.toArray());
-            int i = 0;
-            while (iterator.hasNext() && i < length)
+              List<Set> array = new ArrayList<Set>();
+        List<String> newArrayList = Lists.newArrayList(_context.getProperty("oai", "collection.list").split(";"));
+                newArrayList= newArrayList.subList(
+              Math.min(newArrayList.size(), offset),
+              Math.min(newArrayList.size(), offset + length));
+            for(String community : newArrayList)
             {
-                TableRow row = iterator.next();
-                int collectionID = row.getIntColumn("collection_id");
-                Collection collection = Collection.find(_context, collectionID);
                 array.add(DSpaceSet.newDSpaceCollectionSet(
-                        collection.getHandle(),
-                        collection.getName()));
-                i++;
+                        "col_"+community,
+                        community));
             }
-        }
-        catch (SQLException e)
-        {
-            log.error(e.getMessage(), e);
-        }
+
         return array;
     }
 
@@ -194,35 +149,13 @@ public class DSpaceSetRepository implements SetRepository
     @Override
     public boolean exists(String setSpec)
     {
-        if (setSpec.startsWith("col_"))
+      if (setSpec.startsWith("col_"))
         {
-            try
-            {
-                DSpaceObject dso = HandleManager.resolveToObject(_context,
-                        setSpec.replace("col_", "").replace("_", "/"));
-                if (dso == null || !(dso instanceof Collection))
-                    return false;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                log.error(ex.getMessage(), ex);
-            }
+            return _context.getProperty("oai", "collection.list").contains(setSpec.replace("col_", "").replace("_", "/"));
         }
         else if (setSpec.startsWith("com_"))
         {
-            try
-            {
-                DSpaceObject dso = HandleManager.resolveToObject(_context,
-                        setSpec.replace("com_", "").replace("_", "/"));
-                if (dso == null || !(dso instanceof Community))
-                    return false;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                log.error(ex.getMessage(), ex);
-            }
+            return _context.getProperty("oai", "community.list").contains(setSpec.replace("com_", "").replace("_", "/"));
         }
         return false;
     }

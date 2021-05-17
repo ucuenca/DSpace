@@ -217,6 +217,8 @@ public class CrisMetricsUpdateListener implements SolrEventListener
 
 		@Override
 		public void run() {
+      if(true)
+        return;
 			String coreName = newSearcher.getCore().getName();
 			try {
 				log.info("Building the rank cache... [corname:"+coreName+"][force:" + force +"]" );

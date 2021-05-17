@@ -125,7 +125,7 @@ public class DSpaceContextListener implements ServletContextListener
         try {
             Class webappClass = Class.forName("org.dspace.utils.DSpaceWebapp");
             webApp = (AbstractDSpaceWebapp) webappClass.newInstance();
-            webApp.register();
+            //webApp.register();
         } catch (ClassNotFoundException ex) {
             event.getServletContext().log("Can't create webapp MBean:  " + ex.getMessage());
         } catch (InstantiationException ex) {
@@ -143,7 +143,7 @@ public class DSpaceContextListener implements ServletContextListener
     @Override
     public void contextDestroyed(ServletContextEvent event)
     {
-        webApp.deregister();
+        //webApp.deregister();
 
         try
         {

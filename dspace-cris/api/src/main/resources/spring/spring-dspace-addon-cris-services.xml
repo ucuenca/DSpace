@@ -1605,10 +1605,12 @@
 		<property name="user" ref="dspaceDBUsername" />
 		<property name="password" ref="dspaceDBPassword" />
 		
-		<!-- these are C3P0 properties -->
+		<!-- these are C3P0 properties ref="hibernateInitialPoolSize" ref="hibernateMinPoolSize" -->
         <property name="acquireIncrement" ref="hibernateAcquireIncrement" />
-        <property name="initialPoolSize" ref="hibernateInitialPoolSize" />
-        <property name="minPoolSize" ref="hibernateMinPoolSize" />
+        <property name="initialPoolSize" value="0"/>
+        <property name="minPoolSize" value="0"/>
+        <property name="breakAfterAcquireFailure" value="true"/>
+        <property name="acquireRetryAttempts" value="1"/>
         <property name="maxPoolSize" ref="hibernateMaxPoolSize" />
         <property name="maxIdleTime" ref="hibernateMaxIdleTime" />
 		<property name="maxStatements" ref="hibernateMaxStatements" />

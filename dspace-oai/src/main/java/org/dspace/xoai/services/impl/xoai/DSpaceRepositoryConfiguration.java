@@ -93,19 +93,6 @@ public class DSpaceRepositoryConfiguration implements RepositoryConfiguration
     @Override
     public Date getEarliestDate()
     {
-        // Look at the database!
-        try
-        {
-            return dateResolver.getEarliestDate(context);
-        }
-        catch (SQLException e)
-        {
-            log.error(e.getMessage(), e);
-        }
-        catch (InvalidMetadataFieldException e)
-        {
-            log.error(e.getMessage(), e);
-        }
         return new Date();
     }
 
